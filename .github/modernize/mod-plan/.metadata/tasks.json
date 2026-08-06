@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "upgrade",
+      "id": "001-upgrade-dotnet",
+      "description": "Upgrade the Job_Portal application from .NET Framework 4.7.2 / ASP.NET WebForms to .NET 10 / ASP.NET Core Razor Pages or MVC.",
+      "reason": "ASP.NET WebForms (System.Web) is not supported on .NET Core or Linux, blocking containerization and cloud deployment. Global.asax and Web.config are IIS-specific constructs that must be replaced with ASP.NET Core equivalents (Program.cs, appsettings.json). Addresses issues: ISSUE-004, ISSUE-012, ISSUE-013.",
+      "requirements": "Migrate the ASP.NET WebForms project targeting net472 to ASP.NET Core targeting net10.0. Replace Global.asax lifecycle events with ASP.NET Core middleware pipeline. Convert Web.config IIS-specific settings to ASP.NET Core appsettings.json. Convert all .aspx/.aspx.cs code-behind pages to Razor Pages or MVC controllers/views. Ensure the project builds and unit tests pass after upgrade.",
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "002-transform-local-storage-to-azure-blob",
+      "description": "Migrate local file system storage for company logos (CompanyLogos/) and candidate resumes (Resumes/) to Azure Blob Storage.",
+      "reason": "The application stores uploaded files on the local file system, which is incompatible with containerized cloud deployments using multiple instances. Addresses issues: ISSUE-005.",
+      "requirements": "Replace all local file read/write operations for company logo images and candidate resume PDFs with Azure Blob Storage operations using Managed Identity (DefaultAzureCredential). Ensure upload, download, and delete operations work correctly against Azure Blob Storage. The local CompanyLogos/ and Resumes/ directory references in JobProvider/NewJob.aspx.cs and JobSeeker/Job_Details.aspx.cs must be replaced.",
+      "dependencies": ["001-upgrade-dotnet"],
+      "skills": [
+        {
+          "name": "migration-azure-storage-blob",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "003-transform-mysql-to-azure-sql",
+      "description": "Migrate the application database from MySQL (localhost) to Azure SQL Database using Managed Identity authentication.",
+      "reason": "The MySQL database is hardcoded to localhost (server=127.0.0.1), which fails in any cloud or containerized deployment. Migrating to Azure SQL Database with Managed Identity removes hard-coded credentials and enables secure, scalable cloud database access. Addresses issues: ISSUE-006, ISSUE-010.",
+      "requirements": "Replace MySql.Data (MySqlConnection, MySqlCommand, MySqlDataReader) ADO.NET calls with Azure SQL Database compatible ADO.NET calls (SqlConnection, SqlCommand, SqlDataReader). Use Managed Identity (DefaultAzureCredential) for authentication rather than username/password in connection strings. Migrate the OnlineJobPortal schema (User, Jobs, AppliedCandidates, Contact, Country, ViewAppliedCandidates view) from MySQL syntax to Azure SQL / T-SQL syntax. Remove the MySql.Data and MySqlConnector package dependencies. Ensure all SQL queries across all page code-behind files are updated.",
+      "dependencies": ["002-transform-local-storage-to-azure-blob"],
+      "skills": [
+        {
+          "name": "migration-azure-sql-database",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "004-transform-secrets-to-keyvault",
+      "description": "Move database credentials and other application secrets from configuration files to Azure Key Vault.",
+      "reason": "Database credentials (user id, password) are stored in plaintext in Web.config. Externalizing secrets to Azure Key Vault with Managed Identity access eliminates credential exposure risk. Addresses issues: ISSUE-006.",
+      "requirements": "Remove plaintext database credentials from configuration files. Store any remaining secrets (e.g., connection strings, API keys) in Azure Key Vault. Access Key Vault secrets at runtime using Managed Identity (DefaultAzureCredential) without storing credentials in code or config files.",
+      "dependencies": ["003-transform-mysql-to-azure-sql"],
+      "skills": [
+        {
+          "name": "migration-azure-keyvault-secret",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "005-transform-appsettings-to-azure-app-configuration",
+      "description": "Migrate non-secret application settings from configuration files to Azure App Configuration.",
+      "reason": "Web.config contains IIS-specific configuration that must be replaced after the .NET upgrade. Centralizing non-secret settings in Azure App Configuration enables environment-specific configuration management without redeploying the application. Addresses issues: ISSUE-013.",
+      "requirements": "Identify non-secret application settings currently in Web.config / appsettings.json. Migrate those settings to Azure App Configuration. Ensure the application reads configuration via the standard IConfiguration interface so values injected by Azure App Configuration are visible at runtime. Produce a .azure/configuration-migration.json contract file for the deployment agent.",
+      "dependencies": ["004-transform-secrets-to-keyvault"],
+      "skills": [
+        {
+          "name": "migration-local-appsettings-azure-app-configuration",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "006-transform-console-logging",
+      "description": "Configure structured console logging for cloud-native log aggregation.",
+      "reason": "The application has no logging framework; errors are only surfaced to users as Label.Text messages. Cloud environments require console-based structured logging for log aggregation and observability. Addresses issues: ISSUE-015.",
+      "requirements": "Integrate a console logging provider using the ASP.NET Core logging abstractions (ILogger<T>). Ensure all application events, errors, and warnings are emitted to stdout/stderr in a format compatible with cloud log aggregation (e.g., Azure Monitor, Application Insights). Replace direct user-facing error string assignments (e.g., Label.Text = ex.Message) with proper log calls.",
+      "dependencies": ["005-transform-appsettings-to-azure-app-configuration"],
+      "skills": [
+        {
+          "name": "migration-console-logging",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "007-security-cve-remediation",
+      "description": "Scan all project dependencies for known CVEs and remediate any identified vulnerabilities.",
+      "reason": "The project uses several NuGet packages (iTextSharp 5.x, MySql.Data, BouncyCastle, etc.) that may contain known CVEs. Remediating vulnerabilities before deployment ensures the modernized application is secure.",
+      "requirements": "Upgrade vulnerable dependencies to the minimum patched version. If a CVE fix requires a major version upgrade, document the affected dependency, the current version, the upgraded major version, and the breaking change risk. Verify that the project builds and all tests pass after remediation.",
+      "environmentConfiguration": "Runtime environment and build tool established by previous upgrade and transform tasks (.NET 10, dotnet CLI).",
+      "dependencies": ["006-transform-console-logging"],
+      "skills": [
+        {
+          "name": "validate-cves-and-fix",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "deployment",
+      "id": "008-deployment-azure-container-apps",
+      "description": "Containerize and deploy the modernized Job_Portal application to Azure Container Apps.",
+      "reason": "The modernized ASP.NET Core application is ready for cloud deployment. Azure Container Apps provides a managed, serverless container hosting environment suitable for this web application.",
+      "requirements": "Build a production Docker image for the ASP.NET Core application. Deploy to Azure Container Apps using Managed Identity for all Azure service connections (Azure SQL Database, Azure Blob Storage, Azure Key Vault, Azure App Configuration). Configure environment variables and scaling rules appropriate for the job portal workload.",
+      "dependencies": ["007-security-cve-remediation"],
+      "targetAzureService": "azurecontainerapp",
+      "resourceStatus": "new",
+      "deploymentTool": "bicep",
+      "skills": [
+        {
+          "name": "azcli-containerapp-deploy",
+          "location": "builtin"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "planName": "mod-plan",
+    "projectName": "Job_Portal",
+    "language": "dotnet",
+    "createdAt": "2026-08-06T13:29:49Z",
+    "version": "1.0"
+  }
+}
