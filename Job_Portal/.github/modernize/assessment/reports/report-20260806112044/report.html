@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Assessment - </title>
+<style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-card: #f8f9fa;
+  --bg-page: #f0f1f3;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-muted: #6b7280;
+  --border-color: #d0d7de;
+  --border-light: #e1e4e8;
+  --link-color: #2563eb;
+  --color-mandatory: #E3008C;
+  --color-potential: #637CEF;
+  --color-optional: #A19F9D;
+  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-family); font-size: 13px; color: var(--text-primary); background: var(--bg-primary); line-height: 1.5; margin: 0; padding: 0; }
+a { color: var(--link-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Page layout ───────────────────────────────────────────── */
+.main { margin: 0; padding: 24px 32px; background: var(--bg-primary); }
+.back-link { color: var(--text-muted); font-size: 13px; margin-bottom: 16px; display: block; }
+h1 { font-weight: 600; font-size: 20px; color: var(--text-primary); margin-bottom: 20px; }
+
+/* ── Report cards (matches VS Code .vscode-report-card) ──── */
+.report-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 4px; padding: 12px; margin-bottom: 20px; }
+.report-card h2 { font-size: 14px; font-weight: 600; margin: 0; color: var(--text-primary); }
+.report-card-body { margin-top: 16px; }
+
+/* ── Component Information (two-column) ────────────────── */
+.app-info-container { display: flex; gap: 8px; flex-wrap: wrap; }
+.app-info-column { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+.app-info-row { display: flex; align-items: baseline; }
+.app-info-label { width: 136px; flex-shrink: 0; font-weight: 600; color: var(--text-primary); }
+.app-info-value { flex: 1; color: var(--text-primary); }
+
+/* ── Issue Summary (pie charts + legend) ─────────────────── */
+.cards-container { display: flex; align-items: stretch; gap: 20px; flex-wrap: wrap; }
+.issue-summary-card { flex: 2; }
+.domain-summary-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-around; }
+.domain-summary-item { flex: 1; min-width: 120px; text-align: center; padding: 0 16px; border-right: 1px solid var(--border-light); }
+.domain-summary-item:last-child { border-right: none; }
+.domain-summary-item h3 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 8px; }
+.domain-summary-item .count { font-size: 12px; color: var(--text-secondary); }
+.criticality-legend { display: flex; flex-wrap: wrap; gap: 15px; padding-top: 12px; justify-content: center; }
+.criticality-legend .legend-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-secondary); }
+.legend-swatch { display: inline-block; width: 1em; height: 1em; border-radius: 2px; }
+
+/* ── Issue list tables ───────────────────────────────────── */
+.issue-section { margin-top: 20px; }
+.issue-section h2 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.issue-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px; }
+.issue-table th { text-align: left; text-transform: uppercase; font-weight: 600; font-size: calc(13px * 0.875); padding: 6px 8px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); color: var(--text-secondary); position: sticky; top: 0; z-index: 1; }
+.issue-table td { padding: 12px 8px; border-bottom: 1px solid var(--border-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.col-issue { width: 55%; }
+.col-criticality { width: 25%; }
+.col-storypoint { width: 20%; }
+
+/* ── Target dropdown ─────────────────────────────────────── */
+.target-select-container { margin: 4px 0 16px 0; display: flex; align-items: center; gap: 8px; }
+.target-select-container label { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.target-select-container select { font-family: var(--font-family); font-size: 13px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; }
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0 8px 0; align-items: center; }
+.multi-select { position: relative; display: inline-block; min-width: 140px; }
+.multi-select-btn { font-family: var(--font-family); font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; width: 100%; text-align: left; position: relative; white-space: nowrap; }
+.multi-select-btn::after { content: '\25BE'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-secondary); }
+.multi-select-dropdown { display: none; position: absolute; top: 100%; left: 0; min-width: 100%; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; margin-top: 2px; }
+.multi-select.open .multi-select-dropdown { display: block; }
+.multi-select-option { display: flex; align-items: center; gap: 6px; padding: 5px 10px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.multi-select-option:hover { background: var(--bg-secondary); }
+.multi-select-option input[type=checkbox] { margin: 0; cursor: pointer; }
+.clear-filters { font-size: 12px; color: var(--link-color); cursor: pointer; margin-left: 4px; }
+
+/* ── Criticality labels (colored square + text) ──────────── */
+.crit-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; }
+.crit-square { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.crit-square-mandatory { background: var(--color-mandatory); }
+.crit-square-potential { background: var(--color-potential); }
+.crit-square-optional { background: var(--color-optional); }
+
+/* ── Expandable rows ─────────────────────────────────────── */
+.expand-btn { background: none; border: none; cursor: pointer; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px; transition: transform 0.15s; padding: 0; vertical-align: middle; flex-shrink: 0; }
+.expand-btn.open { transform: rotate(90deg); }
+.issue-title-cell { display: flex; align-items: center; gap: 4px; }
+.detail-row td { padding: 0; border-bottom: 1px solid var(--border-light); white-space: normal; overflow: visible; text-overflow: clip; }
+.detail-content { display: flex; gap: 0; padding: 8px 8px 8px 32px; min-width: 0; }
+.file-list { flex: 0 0 50%; min-width: 0; overflow: hidden; }
+.file-list table { width: 100%; border-collapse: collapse; }
+.file-list th { font-size: calc(13px * 0.875); text-transform: uppercase; font-weight: 600; color: var(--text-secondary); padding: 6px 8px; border-bottom: 1px solid var(--border-color); text-align: left; height: 32px; }
+.file-list td { font-size: 13px; padding: 6px 8px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); }
+.file-list .file-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; display: block; }
+.file-list .position { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.explanation-panel { flex: 1; padding-left: 16px; min-width: 0; overflow-wrap: break-word; word-wrap: break-word; }
+.explanation-panel h4 { font-size: calc(13px * 0.875); text-transform: uppercase; font-weight: 600; color: var(--text-secondary); padding: 6px 0; border-bottom: 1px solid var(--border-color); height: 32px; margin: 0; }
+.explanation-panel p { font-size: 13px; padding: 8px 0; color: var(--text-primary); line-height: 1.6; white-space: normal; word-break: break-word; }
+
+/* ── Experimental badge ──────────────────────────────────── */
+.badge-experimental { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #fef9c3; color: #854d0e; vertical-align: middle; margin-left: 8px; cursor: default; }
+
+/* ── Footer ──────────────────────────────────────────────── */
+.footer { text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 13px; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .main { padding: 16px; }
+  .app-info-container { flex-direction: column; }
+  .domain-summary-container { flex-direction: column; }
+  .domain-summary-item { border-right: none; border-bottom: 1px solid var(--border-light); padding-bottom: 12px; }
+  .detail-content { flex-direction: column; }
+  .file-list { flex: none; width: 100%; }
+  .explanation-panel { padding-left: 0; padding-top: 8px; }
+}
+/* ── Tab navigation ──────────────────────────────────────── */
+.tab-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border-color); margin-bottom: 28px; flex-wrap: wrap; }
+.tab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 18px; font-size: 13px; font-family: var(--font-family); color: var(--text-secondary); cursor: pointer; margin-bottom: -1px; white-space: nowrap; position: relative; }
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--link-color); border-bottom-color: var(--link-color); font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Tooltip on tab ──────────────────────────────────────── */
+.tab-btn[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #24292f; color: #ffffff; font-size: 12px; font-weight: 400; padding: 6px 10px; border-radius: 4px; white-space: normal; width: max-content; max-width: 260px; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; }
+.tab-btn[data-tooltip]:hover::after { opacity: 1; }
+
+/* ── Fact content — prose column ─────────────────────────── */
+.fact-content { max-width: 860px; margin: 0 auto; line-height: 1.75; color: var(--text-primary); font-size: 14px; }
+.fact-content h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; color: var(--text-primary); letter-spacing: -0.01em; }
+.fact-content h1 + p { margin-top: 6px; color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+.fact-content h2 { font-size: 17px; font-weight: 700; margin: 36px 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); letter-spacing: -0.01em; }
+.fact-content h3 { font-size: 14px; font-weight: 700; margin: 24px 0 8px 0; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px; color: var(--text-secondary); }
+.fact-content p { margin: 10px 0; color: var(--text-primary); }
+.fact-content ul, .fact-content ol { margin: 10px 0 10px 22px; }
+.fact-content li { margin: 5px 0; }
+.fact-content a { color: var(--link-color); }
+.fact-content a:hover { text-decoration: underline; }
+
+/* ── Fact tables ─────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+.fact-content table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
+.fact-content thead { background: var(--bg-card); }
+.fact-content th { text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+.fact-content td { padding: 9px 14px; border-bottom: 1px solid var(--border-light); vertical-align: top; color: var(--text-primary); }
+.fact-content tr:last-child td { border-bottom: none; }
+.fact-content tbody tr:hover { background: #f6f8fa; }
+
+/* ── Fact code ───────────────────────────────────────────── */
+.fact-content code { font-family: var(--font-mono); font-size: 12px; background: #f0f1f3; padding: 2px 6px; border-radius: 4px; color: #c7254e; }
+.fact-content pre { background: #f6f8fa; border: 1px solid var(--border-light); border-radius: 6px; padding: 14px 16px; overflow-x: auto; margin: 14px 0; }
+.fact-content pre code { background: none; color: var(--text-primary); padding: 0; border-radius: 0; }
+.fact-content hr { border: none; border-top: 1px solid var(--border-light); margin: 28px 0; }
+.fact-content strong { font-weight: 600; }
+.fact-content em { font-style: italic; }
+.fact-content blockquote { border-left: 3px solid var(--border-color); margin: 12px 0; padding: 4px 16px; color: var(--text-secondary); }
+.fact-unavailable { padding: 32px 0; }
+.fact-unavailable h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); text-transform: none; letter-spacing: 0; margin: 0 0 12px 0; }
+.fact-unavailable p { margin: 0 0 8px 0; color: var(--text-secondary); }
+.fact-unavailable ol, .fact-unavailable ul { margin: 0 0 0 22px; color: var(--text-primary); }
+.fact-unavailable li { margin: 6px 0; }
+
+/* ── Mermaid diagram card ─────────────────────────────────── */
+.mermaid { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 8px; padding: 24px 16px; margin: 20px 0; overflow-x: auto; text-align: center; cursor: pointer; position: relative; }
+.mermaid:hover { border-color: var(--border-color); }
+.mermaid svg { max-width: 100%; height: auto !important; display: inline-block; }
+.mermaid-zoom-hint { position: absolute; top: 8px; right: 10px; font-size: 11px; color: var(--text-muted); opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+.mermaid:hover .mermaid-zoom-hint { opacity: 1; }
+
+/* ── Diagram lightbox ────────────────────────────────────── */
+.diagram-lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.7); backdrop-filter: blur(2px); align-items: center; justify-content: center; cursor: zoom-out; padding: 48px 32px; }
+.diagram-lightbox.open { display: flex; }
+.diagram-lightbox-inner { background: #ffffff; border-radius: 10px; padding: 32px; width: 88vw; max-height: 88vh; overflow: hidden; cursor: default; box-shadow: 0 24px 64px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; }
+.diagram-lightbox-inner svg { width: 100% !important; height: auto !important; max-height: 76vh; display: block; }
+.diagram-lightbox-close { position: fixed; top: 20px; right: 24px; background: #ffffff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 1001; }
+.diagram-lightbox-close:hover { background: var(--bg-card); }
+.diagram-lightbox-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.55); color: #ffffff; font-size: 12px; padding: 6px 14px; border-radius: 20px; pointer-events: none; white-space: nowrap; z-index: 1001; }
+</style>
+<script>
+window.__mermaidPending = [];
+window.__mermaidReady = false;
+window.__renderMermaidIn = function(container) {
+  if (container) { window.__mermaidPending.push(container); }
+};
+</script>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { useMaxWidth: true }, sequence: { useMaxWidth: true } });
+
+window.__renderMermaidIn = function(container) {
+  var nodes = container ? container.querySelectorAll('.mermaid:not([data-processed])') : [];
+  if (nodes.length > 0) {
+    mermaid.run({ nodes: Array.from(nodes) }).then(function() {
+      nodes.forEach(function(node) {
+        if (!node.querySelector('.mermaid-zoom-hint')) {
+          var hint = document.createElement('span');
+          hint.className = 'mermaid-zoom-hint';
+          hint.textContent = 'Click to expand';
+          node.appendChild(hint);
+        }
+      });
+    });
+  }
+};
+
+var drained = new Set();
+(window.__mermaidPending || []).forEach(function(c) {
+  if (!drained.has(c)) { drained.add(c); window.__renderMermaidIn(c); }
+});
+window.__mermaidPending = [];
+window.__mermaidReady = true;
+
+function renderActivePanels() {
+  document.querySelectorAll('.tab-panel.active').forEach(function(p) {
+    if (!drained.has(p)) { drained.add(p); window.__renderMermaidIn(p); }
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderActivePanels);
+} else {
+  renderActivePanels();
+}
+</script>
+</head><body>
+<div id="diagram-lightbox" class="diagram-lightbox" role="dialog" aria-modal="true">
+  <button class="diagram-lightbox-close" id="diagram-lightbox-close" aria-label="Close">&#x2715;</button>
+  <div class="diagram-lightbox-hint">Scroll to zoom &nbsp;&middot;&nbsp; Drag to pan &nbsp;&middot;&nbsp; Double-click to reset</div>
+  <div class="diagram-lightbox-inner" id="diagram-lightbox-inner"></div>
+</div>
+<div class="main">
+<h1></h1>
+<div class="report-card">
+  <h2>Component Information</h2>
+  <div class="report-card-body">
+    <div class="app-info-container">
+      <div class="app-info-column">
+        <div class="app-info-row"><span class="app-info-label">Component Name</span><span class="app-info-value"></span></div>
+        <div class="app-info-row"><span class="app-info-label">Effort</span><span class="app-info-value" id="effort-display">S (total story points: 18)</span></div>
+      </div>
+      <div class="app-info-column">
+        <div class="app-info-row"><span class="app-info-label">Build Tools</span><span class="app-info-value">N/A</span></div>
+        <div class="app-info-row"><span class="app-info-label">Frameworks</span><span class="app-info-value">N/A</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="tab-issues" data-tooltip="Issues detected in the source code">Issues</button>
+  <button class="tab-btn" data-tab="tab-arch" data-tooltip="How the app&#x27;s layers connect — from UI to data.">Architecture</button>
+  <button class="tab-btn" data-tab="tab-api" data-tooltip="Endpoints exposed by this app and how services communicate.">API Contracts</button>
+  <button class="tab-btn" data-tab="tab-config" data-tooltip="Environment settings, runtime profiles, and deployment manifests.">Configuration</button>
+  <button class="tab-btn" data-tab="tab-workflows" data-tooltip="Domain entities and the core flows users move through.">Business Workflows</button>
+  <button class="tab-btn" data-tab="tab-deps" data-tooltip="Libraries and frameworks this app depends on, grouped by category.">Dependencies</button>
+  <button class="tab-btn" data-tab="tab-data" data-tooltip="Database schema, entity relationships, and persistence behavior.">Data Model</button>
+</nav>
+<div id="tab-issues" class="tab-panel active">
+<div class="report-card">
+  <h2>Issue Summary</h2>
+  <div class="report-card-body">
+    <div class="domain-summary-container" id="donut-container">
+      <div class="domain-summary-item">
+<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-optional)" stroke-width="15" stroke-dasharray="219.91 219.91" stroke-dashoffset="-0.00"/>
+</svg>
+
+        <h3>Security</h3>
+        <div class="count">3 issues</div>
+      </div>
+    </div>
+    <div class="criticality-legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-mandatory)"></span>Mandatory</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-potential)"></span>Potential</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-optional)"></span>Optional</div>
+    </div>
+  </div>
+</div>
+<div class="filter-bar" id="filter-bar">
+  <a class="clear-filters" href="javascript:void(0)" onclick="clearAllFilters()">Clear all</a>
+</div>
+<div class="issue-section" data-domain="security">
+  <h2>Security <span class="badge-experimental" title="These issues were generated by AI and may contain inaccuracies or incomplete information. Please review carefully.">Experimental</span></h2>
+  <table class="issue-table">
+    <colgroup><col class="col-issue"/><col class="col-criticality"/><col class="col-storypoint"/></colgroup>
+    <thead><tr><th>Issue Category</th><th>Criticality</th><th>Story Point</th></tr></thead>
+    <tbody>
+    <tr class="issue-row" data-criticality="optional" onclick="toggleRow('row-security-0', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-security-0">&#x276F;</button> CWE-79: Improper Neutralization of Input During Web Page Generation</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">8</td>
+    </tr>
+    <tr class="detail-row" id="row-security-0" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><thead><tr><th>File</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="JobSeeker/Register.aspx.cs:60">JobSeeker/Register.aspx.cs:60</span></td></tr>
+            <tr><td><span class="file-path" title="JobSeeker/Profile.aspx.cs:42">JobSeeker/Profile.aspx.cs:42</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" onclick="toggleRow('row-security-1', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-security-1">&#x276F;</button> CWE-259: Use of Hard-coded Password</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">5</td>
+    </tr>
+    <tr class="detail-row" id="row-security-1" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><thead><tr><th>File</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="Web.config:9">Web.config:9</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" onclick="toggleRow('row-security-2', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-security-2">&#x276F;</button> CWE-798: Use of Hard-coded Credentials</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">5</td>
+    </tr>
+    <tr class="detail-row" id="row-security-2" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><thead><tr><th>File</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="Web.config:9">Web.config:9</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>The product contains hard-coded credentials, such as a password or cryptographic key.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</div><!-- #tab-issues -->
+<div id="tab-arch" class="tab-panel">
+  <div class="fact-content"><h1 id="architecture-diagram">Architecture Diagram</h1>
+<p>This application is a monolithic ASP.NET Web Forms portal with role-based flows for job seekers and job providers. It uses server-rendered pages with direct ADO.NET/MySQL data access and local file storage for uploaded assets.</p>
+<h2 id="application-architecture">Application Architecture</h2>
+<div class="mermaid">
+flowchart TD
+    subgraph Client["Client Layer"]
+        Browser["Web Browser"]
+    end
+
+    subgraph Web["Presentation Layer - ASP.NET Web Forms on .NET Framework 4.7.2"]
+        SeekerUI["JobSeeker Pages"]
+        ProviderUI["JobProvider Pages"]
+        SessionAuth["Session Role Checks"]
+    end
+
+    subgraph Data["Data Layer"]
+        SqlClient["MySql.Data and MySqlConnector"]
+        MySqlDB[("MySQL OnlineJobPortal")]
+        FileStore[("Local File Storage\nCompanyLogos and Resumes")]
+    end
+
+    subgraph External["External Services"]
+        None["No external API integrations detected"]
+    end
+
+    Browser -->|"HTTP and HTTPS requests"| SeekerUI
+    Browser -->|"HTTP and HTTPS requests"| ProviderUI
+    SeekerUI -->|"session and role validation"| SessionAuth
+    ProviderUI -->|"session and role validation"| SessionAuth
+    SeekerUI -->|"parameterized SQL operations"| SqlClient
+    ProviderUI -->|"parameterized SQL operations"| SqlClient
+    SqlClient -->|"CRUD queries"| MySqlDB
+    SeekerUI -->|"save and read resumes"| FileStore
+    ProviderUI -->|"save and read company logos"| FileStore
+</div>
+<h3 id="technology-stack-summary">Technology Stack Summary</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th>
+</tr></thead><tbody>
+<tr><td>Presentation</td><td>ASP.NET Web Forms</td><td>.NET Framework 4.7.2</td><td>Server-rendered UI for seeker/provider workflows</td></tr>
+<tr><td>Business Logic</td><td>Code-behind page handlers</td><td>In project source</td><td>Implements login, registration, posting, applying, and admin actions</td></tr>
+<tr><td>Data Access</td><td>MySql.Data, MySqlConnector</td><td>9.2.0, 2.4.0</td><td>Database connectivity and SQL execution</td></tr>
+<tr><td>Data Storage</td><td>MySQL</td><td>Not pinned in repo</td><td>Stores users, jobs, contacts, and applications</td></tr>
+<tr><td>File Storage</td><td>Local filesystem</td><td>N/A</td><td>Stores resumes and company logo uploads</td></tr>
+</tbody></table></div>
+<h3 id="data-storage-external-services">Data Storage & External Services</h3>
+<p>The application persists core business data in a single MySQL database and stores uploaded files in local folders inside the web app (<code>Resumes</code>, <code>CompanyLogos</code>). No message broker, cache tier, or outbound third-party service/API integration was identified.</p>
+<h3 id="key-architectural-decisions">Key Architectural Decisions</h3>
+<ul>
+<li>Uses a single monolithic Web Forms application instead of separate API and frontend services.</li>
+<li>Uses direct SQL from page code-behind files rather than repository/service abstractions.</li>
+<li>Uses session state role checks in page lifecycle methods for access control.</li>
+</ul>
+<h2 id="component-relationships">Component Relationships</h2>
+<div class="mermaid">
+flowchart LR
+    subgraph Presentation["Presentation"]
+        Login["Login.aspx.cs"]
+        Register["Register.aspx.cs"]
+        JobListing["Job_Listing.aspx.cs"]
+        JobDetails["Job_Details.aspx.cs"]
+        NewJob["NewJob.aspx.cs"]
+        JobList["JobList.aspx.cs"]
+        ViewResume["ViewResume.aspx.cs"]
+        ContactList["ContactList.aspx.cs"]
+    end
+
+    subgraph Business["Business Logic"]
+        AuthRules["Role and session checks"]
+        ApplyRules["Application eligibility checks"]
+        FilterRules["Listing filter and pagination logic"]
+    end
+
+    subgraph DataAccess["Data Access"]
+        MySqlConn["MySqlConnection and MySqlCommand"]
+        SQLQueries["Inline SQL statements"]
+    end
+
+    subgraph Infrastructure["Infrastructure"]
+        Config["Web.config connectionStrings"]
+        FileIO["Server.MapPath and File.Exists"]
+    end
+
+    Login -->|"authenticates user"| AuthRules
+    Register -->|"creates user"| AuthRules
+    JobDetails -->|"apply flow checks"| ApplyRules
+    JobListing -->|"builds dynamic query"| FilterRules
+    NewJob -->|"validates role and uploads logo"| AuthRules
+
+    AuthRules -->|"uses DB operations"| MySqlConn
+    ApplyRules -->|"uses DB operations"| MySqlConn
+    FilterRules -->|"uses DB operations"| MySqlConn
+    MySqlConn -->|"executes"| SQLQueries
+    MySqlConn -->|"reads config"| Config
+    NewJob -->|"writes files"| FileIO
+    ViewResume -->|"checks files"| FileIO
+</div>
+<h3 id="component-inventory">Component Inventory</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Component</th><th>Layer</th><th>Type</th><th>Responsibility</th>
+</tr></thead><tbody>
+<tr><td>Login.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Authenticates user and sets session context</td></tr>
+<tr><td>Register.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Registers job seekers/providers</td></tr>
+<tr><td>Job_Listing.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Filters and paginates job listings</td></tr>
+<tr><td>Job_Details.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Shows details and submits applications</td></tr>
+<tr><td>NewJob.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Creates jobs and uploads company logo</td></tr>
+<tr><td>JobList.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Provider-side job management (edit/delete)</td></tr>
+<tr><td>ViewResume.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Lists and manages candidate applications</td></tr>
+<tr><td>ContactList.aspx.cs</td><td>Presentation</td><td>Web Forms page handler</td><td>Lists and deletes contact submissions</td></tr>
+<tr><td>MySqlConnection/MySqlCommand</td><td>Data Access</td><td>DB access primitives</td><td>Executes parameterized SQL statements</td></tr>
+<tr><td>Web.config connectionStrings</td><td>Infrastructure</td><td>Configuration source</td><td>Supplies MySQL connection details</td></tr>
+</tbody></table></div></div>
+</div>
+<div id="tab-api" class="tab-panel">
+  <div class="fact-content"><h1 id="api-service-communication-contracts">API & Service Communication Contracts</h1>
+<p>The project exposes a page-based HTTP contract through ASP.NET Web Forms rather than a dedicated REST API surface. Communication is synchronous request-response between browser clients and server-side page handlers with direct database operations.</p>
+<h2 id="service-catalog">Service Catalog</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Port</th><th>Category</th><th>Purpose</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal (Web Forms monolith)</td><td>80/443 (IIS-hosted)</td><td>API Layer + Business</td><td>Serves job seeker/provider pages and handles all business operations</td></tr>
+<tr><td>MySQL database</td><td>3306</td><td>Infrastructure</td><td>Persists users, jobs, contacts, and applications</td></tr>
+</tbody></table></div>
+<h2 id="api-endpoints-inventory">API Endpoints Inventory</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Method</th><th>Path</th><th>Request Type</th><th>Response Type</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal</td><td>GET</td><td><code>/JobSeeker/Login.aspx</code></td><td>Page request, query/cookie/session context</td><td>Rendered HTML page</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobSeeker/Login.aspx</code></td><td>Form postback (<code>username</code>, <code>password</code>, <code>role</code>)</td><td>Redirect to dashboard/index or HTML with validation message</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobSeeker/Register.aspx</code></td><td>Form postback for user registration fields</td><td>HTML success/failure message</td></tr>
+<tr><td>Job_Portal</td><td>GET</td><td><code>/JobSeeker/Job_Listing.aspx</code></td><td>Query/filter controls</td><td>Rendered HTML list</td></tr>
+<tr><td>Job_Portal</td><td>GET</td><td><code>/JobSeeker/Job_Details.aspx?JobID={id}</code></td><td>Path/query parameter (<code>JobID</code>)</td><td>Rendered HTML details</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobSeeker/Job_Details.aspx?JobID={id}</code></td><td>Postback for apply action</td><td>HTML success/failure message</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobProvider/NewJob.aspx</code></td><td>Form postback with job fields and optional file upload</td><td>HTML success/failure message</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobProvider/JobList.aspx</code></td><td>Grid action postbacks (edit/delete/paging)</td><td>Updated HTML grid</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobProvider/ViewResume.aspx</code></td><td>Grid action postback (delete/paging)</td><td>Updated HTML grid</td></tr>
+<tr><td>Job_Portal</td><td>POST</td><td><code>/JobProvider/ContactList.aspx</code></td><td>Grid action postback (delete/paging)</td><td>Updated HTML grid</td></tr>
+</tbody></table></div>
+<h2 id="management-observability-endpoints">Management & Observability Endpoints</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Endpoint</th><th>Custom Metrics (if any)</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal</td><td>None detected</td><td>None detected</td></tr>
+</tbody></table></div>
+<h2 id="dtos-contracts">DTOs & Contracts</h2>
+<p>The application primarily uses Web Forms controls and <code>DataTable</code>/<code>MySqlDataReader</code> objects as request and response contracts rather than explicit DTO classes. Key contract-level models are implicit:</p>
+<ul>
+<li><code>Session</code> keys (<code>Username</code>, <code>UserID</code>, <code>Role</code>) as authentication context contract.</li>
+<li>Form-bound entities for registration, job posting, and application submission.</li>
+<li>Grid/list contracts for job listings, contacts, and applications.</li>
+</ul>
+<p>No OpenAPI, Swagger, protobuf, or GraphQL contract files were detected.</p>
+<h2 id="communication-patterns">Communication Patterns</h2>
+<p>All communication is synchronous and in-process: browser requests are handled by page code-behind logic that executes SQL against MySQL. No asynchronous messaging, retry framework, circuit breaker library, service discovery, or gateway composition layer is configured. Startup dependency is limited to web host availability plus reachable MySQL connection.</p>
+<p>Security posture at API contract level:</p>
+<ul>
+<li>No centralized API authentication middleware; authentication is session-based after login.</li>
+<li>Role checks are implemented in selected pages using session values.</li>
+<li>No repository evidence of explicit TLS enforcement configuration in application code.</li>
+</ul>
+<h2 id="service-technology-matrix">Service Technology Matrix</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Web</th><th>Data Access</th><th>Discovery</th><th>Gateway</th><th>Actuator</th><th>Cache</th><th>Metrics</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal</td><td>ASP.NET Web Forms</td><td>MySqlConnection/MySqlCommand</td><td>None</td><td>None</td><td>None</td><td>None</td><td>None</td></tr>
+</tbody></table></div>
+<h2 id="service-communication-sequence">Service Communication Sequence</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant User as "Job Seeker"
+    participant Web as "Job_Portal Web Forms"
+    participant Auth as "Login Handler"
+    participant Jobs as "Job and Apply Handler"
+    participant DB as "MySQL"
+
+    User->>Web: GET Job_Listing.aspx
+    Web->>DB: Query jobs and filters
+    DB-->>Web: Job records
+    Web-->>User: Render listing HTML
+
+    User->>Web: GET Job_Details.aspx JobID
+    Web->>DB: Query selected job
+    DB-->>Web: Job details
+    Web-->>User: Render job details HTML
+
+    User->>Web: POST apply action
+    Web->>Auth: Validate session user role
+    alt Authenticated user
+        Web->>DB: Query user resume path
+        alt Resume exists
+            Web->>DB: Insert AppliedCandidates row
+            DB-->>Web: Insert success
+            Web-->>User: Application submitted message
+        else Resume missing
+            Web-->>User: Prompt to upload resume
+        end
+    else Not authenticated
+        Web-->>User: Redirect to Login.aspx
+    end
+</div></div>
+</div>
+<div id="tab-config" class="tab-panel">
+  <div class="fact-content"><h1 id="configuration-externalized-settings-inventory">Configuration & Externalized Settings Inventory</h1>
+<p>The project uses a small set of XML-based configuration files with a single primary runtime profile and no external configuration server. Sensitive settings are embedded in <code>Web.config</code> and consumed directly by the application at runtime.</p>
+<h2 id="configuration-sources">Configuration Sources</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Source</th><th>Type</th><th>Path/Location</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td>Web.config</td><td>Application runtime config</td><td><code>Job_Portal/Web.config</code></td><td>Connection strings, appSettings, compiler and runtime binding redirects</td></tr>
+<tr><td>Web.Debug.config</td><td>Transform config</td><td><code>Job_Portal/Web.Debug.config</code></td><td>Debug transform placeholder</td></tr>
+<tr><td>Web.Release.config</td><td>Transform config</td><td><code>Job_Portal/Web.Release.config</code></td><td>Release transform placeholder</td></tr>
+<tr><td>Job_Portal.csproj</td><td>Build config</td><td><code>Job_Portal/Job_Portal.csproj</code></td><td>Build settings, imports, references, target framework</td></tr>
+<tr><td>packages.config</td><td>Dependency config</td><td><code>Job_Portal/packages.config</code></td><td>NuGet package versions</td></tr>
+</tbody></table></div>
+<h2 id="build-profiles">Build Profiles</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Profile</th><th>Activation</th><th>Purpose</th><th>Key Dependencies/Plugins</th>
+</tr></thead><tbody>
+<tr><td>Debug</td><td>Visual Studio/MSBuild configuration</td><td>Development build and debugging</td><td>.NET Framework 4.7.2 project settings</td></tr>
+<tr><td>Release</td><td>Visual Studio/MSBuild configuration</td><td>Production-oriented build output</td><td>Uses Web.Release.config transform hooks</td></tr>
+</tbody></table></div>
+<h2 id="runtime-profiles">Runtime Profiles</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Profile</th><th>Activation Method</th><th>Config Files</th><th>Key Overrides</th>
+</tr></thead><tbody>
+<tr><td>Default</td><td>IIS/ASP.NET host startup</td><td><code>Web.config</code></td><td>Connection string <code>cs</code>, target framework 4.7.2</td></tr>
+<tr><td>Debug transform</td><td>Build transform selection</td><td><code>Web.Debug.config</code> + <code>Web.config</code></td><td>Environment-specific transform capability</td></tr>
+<tr><td>Release transform</td><td>Build transform selection</td><td><code>Web.Release.config</code> + <code>Web.config</code></td><td>Environment-specific transform capability</td></tr>
+</tbody></table></div>
+<h2 id="properties-inventory">Properties Inventory</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Property Key</th><th>Default</th><th>Profiles</th><th>Source</th>
+</tr></thead><tbody>
+<tr><td>connectionStrings:cs</td><td><code>server=127.0.0.1;user id=root;<strong><em></strong></em>;database=OnlineJobPortal;</code></td><td>Default</td><td>Web.config</td></tr>
+<tr><td>ValidationSettings:UnobtrusiveValidationMode</td><td><code>None</code></td><td>Default</td><td>Web.config</td></tr>
+<tr><td>compilation:debug</td><td><code>true</code></td><td>Default (often overridden by transform)</td><td>Web.config</td></tr>
+<tr><td>compilation:targetFramework</td><td><code>4.7.2</code></td><td>Default</td><td>Web.config</td></tr>
+<tr><td>httpRuntime:targetFramework</td><td><code>4.7.2</code></td><td>Default</td><td>Web.config</td></tr>
+<tr><td>System.Memory bindingRedirect</td><td><code>4.0.1.2</code></td><td>Default</td><td>Web.config</td></tr>
+<tr><td>System.Runtime.CompilerServices.Unsafe bindingRedirect</td><td><code>6.0.0.0</code></td><td>Default</td><td>Web.config</td></tr>
+</tbody></table></div>
+<h2 id="startup-parameters-resource-requirements">Startup Parameters & Resource Requirements</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>JVM/Runtime Options</th><th>Memory</th><th>Instance Count</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal</td><td>ASP.NET on .NET Framework under IIS (no explicit startup args in repo)</td><td>Not specified in repo</td><td>Not specified in repo</td></tr>
+</tbody></table></div>
+<h2 id="startup-dependency-chain">Startup Dependency Chain</h2>
+<ol>
+<li>IIS/ASP.NET host starts Job_Portal application domain.</li>
+<li>Application loads <code>Web.config</code> and runtime binding redirects.</li>
+<li>First request requiring data access opens MySQL connection using <code>connectionStrings:cs</code>.</li>
+</ol>
+<h2 id="secrets-sensitive-configuration">Secrets & Sensitive Configuration</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Secret Reference</th><th>Type</th><th>Storage (masked)</th>
+</tr></thead><tbody>
+<tr><td><code>connectionStrings:cs</code> password segment</td><td>Database credential</td><td><code>Web.config</code> inline value <code>[MASKED]</code></td></tr>
+</tbody></table></div>
+<h3 id="secrets-provisioning-workflow">Secrets Provisioning Workflow</h3>
+<p>No external secret manager integration was identified. Credentials appear to be stored directly in configuration and loaded at runtime by <code>ConfigurationManager.ConnectionStrings</code>. Deployment-time provisioning is therefore likely manual or environment transform based.</p>
+<h2 id="feature-flags">Feature Flags</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Flag Name</th><th>Default</th><th>Controlled By</th>
+</tr></thead><tbody>
+<tr><td>None detected</td><td>N/A</td><td>N/A</td></tr>
+</tbody></table></div>
+<h2 id="framework-runtime-versions">Framework & Runtime Versions</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Component</th><th>Version</th><th>Source</th>
+</tr></thead><tbody>
+<tr><td>.NET Framework target</td><td>4.7.2</td><td><code>Job_Portal.csproj</code>, <code>Web.config</code></td></tr>
+<tr><td>ASP.NET Web Forms project type</td><td>Legacy Web Application</td><td><code>Job_Portal.csproj</code> ProjectTypeGuids</td></tr>
+<tr><td>MySql.Data</td><td>9.2.0</td><td><code>packages.config</code></td></tr>
+<tr><td>MySqlConnector</td><td>2.4.0</td><td><code>packages.config</code></td></tr>
+<tr><td>Newtonsoft.Json</td><td>13.0.3</td><td><code>packages.config</code></td></tr>
+<tr><td>Microsoft.CodeDom.Providers.DotNetCompilerPlatform</td><td>2.0.1</td><td><code>packages.config</code></td></tr>
+</tbody></table></div></div>
+</div>
+<div id="tab-workflows" class="tab-panel">
+  <div class="fact-content"><h1 id="core-business-workflows">Core Business Workflows</h1>
+<p>The application supports two primary user personas: job seekers discovering and applying to jobs, and job providers posting and managing listings. Business logic is implemented in page handlers that coordinate user input, eligibility checks, and persistent state updates.</p>
+<h2 id="domain-entities">Domain Entities</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Entity</th><th>Service / Bounded Context</th><th>Description</th><th>Key Relationships</th>
+</tr></thead><tbody>
+<tr><td>User</td><td>Identity and profile context</td><td>Represents authenticated job seekers and job providers</td><td>Links to applications and resumes</td></tr>
+<tr><td>Jobs</td><td>Job publishing context</td><td>Represents openings created by providers</td><td>Receives multiple candidate applications</td></tr>
+<tr><td>AppliedCandidates</td><td>Application processing context</td><td>Represents a seeker applying to a specific job</td><td>Connects User and Jobs</td></tr>
+<tr><td>Contact</td><td>Communication context</td><td>Stores inbound contact messages</td><td>Managed by provider/admin view</td></tr>
+<tr><td>Country</td><td>Reference data context</td><td>Stores country options used in forms</td><td>Referenced by user/job profile data</td></tr>
+</tbody></table></div>
+<h2 id="service-to-domain-mapping">Service-to-Domain Mapping</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Domain Context</th><th>Owned Entities</th><th>External Dependencies</th>
+</tr></thead><tbody>
+<tr><td>JobSeeker pages</td><td>Discovery and application</td><td>User, Jobs (read), AppliedCandidates (write)</td><td>MySQL shared schema, session state</td></tr>
+<tr><td>JobProvider pages</td><td>Job publishing and screening</td><td>Jobs (write), AppliedCandidates (manage), Contact (manage)</td><td>MySQL shared schema, local file storage</td></tr>
+<tr><td>Shared monolith runtime</td><td>Identity and authorization context</td><td>User session and role context</td><td>ASP.NET session state</td></tr>
+</tbody></table></div>
+<h2 id="primary-workflows">Primary Workflows</h2>
+<h3 id="workflow-1-user-registration-and-login">Workflow 1: User registration and login</h3>
+<ol>
+<li>User submits registration form with role selection.</li>
+<li>System attempts to create a <code>User</code> record.</li>
+<li>On duplicate username or DB failure, user receives failure feedback.</li>
+<li>User submits login form with username, password, and selected role.</li>
+<li>System validates credentials and role, then stores <code>Username</code>, <code>UserID</code>, and <code>Role</code> in session.</li>
+<li>User is redirected to seeker or provider landing page by role.</li>
+</ol>
+<h3 id="workflow-2-job-posting-and-maintenance-by-provider">Workflow 2: Job posting and maintenance by provider</h3>
+<ol>
+<li>Provider accesses posting page; role check validates session.</li>
+<li>Provider submits job details and optional company logo.</li>
+<li>System validates allowed image extension, stores logo file, and inserts a <code>Jobs</code> record.</li>
+<li>Provider can edit or delete existing jobs via grid actions.</li>
+<li>Changes are persisted immediately to <code>Jobs</code> table and reflected in UI.</li>
+</ol>
+<h3 id="workflow-3-job-search-and-application-by-seeker">Workflow 3: Job search and application by seeker</h3>
+<ol>
+<li>Seeker opens listings and applies filters (location, experience, type, posted time).</li>
+<li>System constructs filtered query and paginates result set.</li>
+<li>Seeker opens a job details page and system checks whether already applied.</li>
+<li>On apply, system verifies user is logged in and has a resume path.</li>
+<li>If eligible, system inserts <code>AppliedCandidates</code> record; otherwise returns actionable message.</li>
+</ol>
+<h2 id="cross-service-data-flows">Cross-Service Data Flows</h2>
+<p>Because the solution is a monolith, cross-service flow is implemented as cross-feature data composition over the same database. Job seeker flows read <code>Jobs</code> and <code>User</code>, then join job and user context by writing <code>AppliedCandidates</code>. Provider screening reads from <code>ViewAppliedCandidates</code> (derived join view) to combine candidate and job information for review. If prerequisite data is missing (for example, no uploaded resume), workflows degrade by returning user guidance instead of mutating state.</p>
+<h2 id="business-workflow-sequence">Business Workflow Sequence</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant Seeker as "Job Seeker"
+    participant UI as "JobSeeker Pages"
+    participant Rules as "Eligibility Rules"
+    participant DB as "MySQL"
+
+    Seeker->>UI: Search jobs with filters
+    UI->>DB: Query matching Jobs
+    DB-->>UI: Job list
+    UI-->>Seeker: Render paged results
+
+    Seeker->>UI: Open selected job details
+    UI->>DB: Load job and application status
+    DB-->>UI: Job details and prior application count
+    UI-->>Seeker: Show apply action
+
+    Seeker->>UI: Submit apply request
+    UI->>Rules: Check login session and role
+    alt Eligible session
+        UI->>DB: Load user resume path
+        alt Resume available
+            UI->>DB: Insert AppliedCandidates record
+            DB-->>UI: Insert success
+            UI-->>Seeker: Application submitted
+        else Resume missing
+            Note over UI: Application blocked until resume uploaded
+            UI-->>Seeker: Prompt to upload resume
+        end
+    else Not logged in
+        UI-->>Seeker: Redirect to login
+    end
+</div>
+<h2 id="business-rules-decision-logic">Business Rules & Decision Logic</h2>
+<ul>
+<li>Role-based access: provider-only pages validate <code>Session["Role"] == "Job Provider"</code>.</li>
+<li>Login decision rule: credential validation requires username, password, and role match.</li>
+<li>Application eligibility: seeker cannot apply if already applied or missing stored resume.</li>
+<li>File acceptance rule: company logo uploads are restricted to specific image extensions.</li>
+<li>State mutations are immediate and transactional per SQL statement (no saga/event choreography detected).</li>
+<li>Error handling surfaces database and validation outcomes directly to end users via status labels.</li>
+</ul></div>
+</div>
+<div id="tab-deps" class="tab-panel">
+  <div class="fact-content"><h1 id="dependency-map">Dependency Map</h1>
+<p>This dependency map covers declared NuGet dependencies for Job_Portal from <code>packages.config</code> and project references in <code>Job_Portal.csproj</code> (24 external packages detected).</p>
+<h2 id="dependencies">Dependencies</h2>
+<div class="mermaid">
+flowchart LR
+    App["Job_Portal"]
+
+    subgraph Web["Web Frameworks"]
+        AspNet["ASP.NET Web Forms on .NET Framework 4.7.2"]
+        CodeDom["Microsoft.CodeDom.Providers.DotNetCompilerPlatform 2.0.1"]
+    end
+
+    subgraph DB["Database and ORM"]
+        MySqlData["MySql.Data 9.2.0"]
+        MySqlConnector["MySqlConnector 2.4.0"]
+    end
+
+    subgraph Security["Security"]
+        BouncyCastle["BouncyCastle.Cryptography 2.4.0"]
+    end
+
+    subgraph Logging["Logging"]
+        LogAbs["Microsoft.Extensions.Logging.Abstractions 8.0.2"]
+        DiagSrc["System.Diagnostics.DiagnosticSource 8.0.1"]
+    end
+
+    subgraph Util["Utilities"]
+        Json["Newtonsoft.Json 13.0.3"]
+        Protobuf["Google.Protobuf 3.26.1"]
+        IText["iTextSharp 5.5.13.4"]
+        Lz4["K4os.Compression.LZ4 1.3.8"]
+        Lz4Stream["K4os.Compression.LZ4.Streams 1.3.8"]
+        XxHash["K4os.Hash.xxHash 1.0.8"]
+        Zstd["ZstdSharp.Port 0.8.0"]
+        AsyncIntf["Microsoft.Bcl.AsyncInterfaces 8.0.0"]
+        DiAbs["Microsoft.Extensions.DependencyInjection.Abstractions 8.0.2"]
+        Buffers["System.Buffers 4.5.1"]
+        CfgMgr["System.Configuration.ConfigurationManager 8.0.0"]
+        Pipelines["System.IO.Pipelines 5.0.2"]
+        Memory["System.Memory 4.5.5"]
+        Vectors["System.Numerics.Vectors 4.5.0"]
+        Unsafe["System.Runtime.CompilerServices.Unsafe 6.0.0"]
+        TaskExt["System.Threading.Tasks.Extensions 4.5.4"]
+    end
+
+    App -->|"web"| Web
+    App -->|"persistence"| DB
+    App -->|"security"| Security
+    App -->|"logging"| Logging
+    App -->|"utilities"| Util
+</div>
+<h3 id="dependency-summary">Dependency Summary</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Category</th><th>Count</th><th>Key Libraries</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td>Web Frameworks</td><td>2</td><td>ASP.NET Web Forms, DotNetCompilerPlatform</td><td>Legacy .NET Framework web stack</td></tr>
+<tr><td>Database and ORM</td><td>2</td><td>MySql.Data, MySqlConnector</td><td>Two MySQL client libraries coexist</td></tr>
+<tr><td>Security</td><td>1</td><td>BouncyCastle.Cryptography</td><td>Cryptographic primitives</td></tr>
+<tr><td>Logging</td><td>2</td><td>Microsoft.Extensions.Logging.Abstractions, DiagnosticSource</td><td>Abstractions only, no dedicated sink package</td></tr>
+<tr><td>Utilities</td><td>17</td><td>Newtonsoft.Json, iTextSharp, Google.Protobuf, System.*</td><td>Mixed modern package versions on net472</td></tr>
+</tbody></table></div>
+<h3 id="version-compatibility-risks">Version & Compatibility Risks</h3>
+<p>The project targets .NET Framework 4.7.2, which constrains modernization paths and increases compatibility friction with newer 8.x dependency packages. The coexistence of both <code>MySql.Data</code> and <code>MySqlConnector</code> can introduce runtime behavior differences and duplicate transitive trees.</p>
+<h3 id="notable-observations">Notable Observations</h3>
+<ul>
+<li><code>iTextSharp 5.5.x</code> is a legacy line and frequently flagged for modernization/licensing review.</li>
+<li>Multiple compression packages (<code>LZ4</code>, <code>xxHash</code>, <code>ZstdSharp</code>) are present without obvious central abstraction.</li>
+<li>Dependencies are managed via <code>packages.config</code> instead of SDK-style <code><PackageReference></code>.</li>
+<li>No explicit test-scoped dependencies were detected in build/package files.</li>
+</ul>
+<h2 id="test-dependencies">Test Dependencies</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Framework</th><th>Version</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td>None detected</td><td>N/A</td><td>No test package declarations found in this project</td></tr>
+</tbody></table></div>
+<p>Total test-scope dependencies: 0</p>
+<p>No test dependencies were detected from <code>packages.config</code> or project metadata.</p></div>
+</div>
+<div id="tab-data" class="tab-panel">
+  <div class="fact-content"><h1 id="data-architecture-persistence-layer">Data Architecture & Persistence Layer</h1>
+<p>The data layer is centered on a single MySQL schema used by all application flows, with persistence implemented via direct SQL from Web Forms code-behind files. Core domain data includes users, jobs, contacts, and candidate applications.</p>
+<h2 id="database-configuration">Database Configuration</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service/Module</th><th>DB Type</th><th>Profile</th><th>Driver</th><th>Connection</th><th>Migration Tool</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal</td><td>MySQL</td><td>Default (single environment config in Web.config)</td><td>MySql.Data.MySqlClient</td><td>`server=127.0.0.1;database=OnlineJobPortal;user id=root;<strong><em></strong></em></td><td>None detected</td></tr>
+</tbody></table></div>
+<h2 id="data-ownership-per-service">Data Ownership per Service</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Tables Owned</th><th>ORM Framework</th><th>Caching</th><th>Notes</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal monolith</td><td><code>User</code>, <code>Jobs</code>, <code>Contact</code>, <code>AppliedCandidates</code>, <code>Country</code>, <code>ViewAppliedCandidates</code></td><td>ADO.NET with MySql.Data/MySqlConnector (no ORM)</td><td>None detected</td><td>Shared schema used by all job seeker/provider flows</td></tr>
+</tbody></table></div>
+<h2 id="entity-model">Entity Model</h2>
+<div class="mermaid">
+erDiagram
+    USER ||--o{ APPLIEDCANDIDATES : "submits"
+    JOBS ||--o{ APPLIEDCANDIDATES : "receives"
+
+    USER {
+        int UserId PK
+        string Username
+        string Password
+        string Name
+        string Email
+        string Role
+        string Resume
+    }
+
+    JOBS {
+        int JobId PK
+        string Title
+        string CompanyName
+        string Country
+        string State
+        string JobType
+        string Salary
+        date LastDateToApply
+        datetime CreateDate
+    }
+
+    CONTACT {
+        int ContactId PK
+        string Name
+        string Email
+        string Subject
+        string Message
+        datetime CreatedAt
+    }
+
+    APPLIEDCANDIDATES {
+        int ApplicationId PK
+        int JobId FK
+        int UserId FK
+        string Resume
+        datetime ApplyDate
+    }
+
+    COUNTRY {
+        int CountryId PK
+        string CountryName
+    }
+</div>
+<h2 id="key-repository-methods">Key Repository Methods</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Repository</th><th>Notable Methods</th><th>Purpose</th>
+</tr></thead><tbody>
+<tr><td>Job_Portal</td><td>Inline SQL in <code>Login.aspx.cs</code></td><td><code>SELECT <em> FROM User WHERE Username=@Username AND <strong></em></strong>* AND Role=@Role</code></td><td>User authentication and role validation</td></tr>
+<tr><td>Job_Portal</td><td>Inline SQL in <code>Register.aspx.cs</code></td><td><code>INSERT INTO User (...) VALUES (...)</code></td><td>User onboarding</td></tr>
+<tr><td>Job_Portal</td><td>Inline SQL in <code>Job_Listing.aspx.cs</code></td><td>Dynamic filtered <code>SELECT * FROM Jobs WHERE ... ORDER BY CreateDate DESC</code></td><td>Job search with filters and pagination</td></tr>
+<tr><td>Job_Portal</td><td>Inline SQL in <code>Job_Details.aspx.cs</code></td><td><code>SELECT * FROM Jobs WHERE JobID=@JobID</code>; insert into <code>AppliedCandidates</code></td><td>Job details retrieval and application submission</td></tr>
+<tr><td>Job_Portal</td><td>Inline SQL in <code>JobList.aspx.cs</code></td><td><code>UPDATE Jobs ... WHERE JobId=@JobId</code>; <code>DELETE FROM Jobs WHERE JobId=@JobId</code></td><td>Provider-side job maintenance</td></tr>
+<tr><td>Job_Portal</td><td>Inline SQL in <code>ViewResume.aspx.cs</code></td><td><code>SELECT ... FROM ViewAppliedCandidates</code>; delete from <code>AppliedCandidates</code></td><td>Candidate application review and cleanup</td></tr>
+</tbody></table></div>
+<h2 id="caching-strategy">Caching Strategy</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Area</th><th>Provider</th><th>TTL/Eviction</th><th>Pattern</th><th>Rationale</th>
+</tr></thead><tbody>
+<tr><td>Application data</td><td>None detected</td><td>N/A</td><td>Direct database access</td><td>Simpler legacy architecture without cache layer</td></tr>
+<tr><td>Session auth state</td><td>ASP.NET session state</td><td>Framework-managed</td><td>Session-based context</td><td>Tracks logged-in user and role per browser session</td></tr>
+</tbody></table></div>
+<h2 id="data-ownership-boundaries">Data Ownership Boundaries</h2>
+<p>The application uses a shared-database monolith pattern. Job seeker and job provider features read and write the same tables in a single schema without service-level ownership boundaries. Cross-feature data access is direct SQL against shared tables and a database view (<code>ViewAppliedCandidates</code>) for reporting-style joins.</p>
+<h3 id="data-classification-sensitivity">Data Classification & Sensitivity</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Entity</th><th>Sensitive Fields</th><th>Classification (PII/PHI/PCI/None)</th><th>Controls in Place</th>
+</tr></thead><tbody>
+<tr><td>USER</td><td>Name, Email, Mobile, Address, Resume, Password</td><td>PII</td><td>Session-based access checks; no explicit encryption or masking detected</td></tr>
+<tr><td>JOBS</td><td>CompanyName, Email, Address fields in posting forms</td><td>PII</td><td>No explicit field-level masking detected</td></tr>
+<tr><td>CONTACT</td><td>Name, Email, Message</td><td>PII</td><td>No explicit encryption or masking detected</td></tr>
+<tr><td>APPLIEDCANDIDATES</td><td>UserId, Resume, Email (in view output)</td><td>PII</td><td>Access controlled by provider pages; no explicit encryption at rest detected</td></tr>
+</tbody></table></div></div>
+</div>
+<p class="footer">Your feedback is invaluable &mdash; <a href="https://aka.ms/ghcp-appmod/feedback">Share feedback</a></p>
+<script>
+function toggleRow(rowId, triggerRow) {
+  var detail = document.getElementById(rowId);
+  var btn = document.getElementById('btn-' + rowId);
+  if (!detail) return;
+  var visible = detail.style.display !== 'none';
+  detail.style.display = visible ? 'none' : 'table-row';
+  if (btn) btn.classList.toggle('open', !visible);
+}
+(function() {
+  var nav = document.querySelector('.tab-nav');
+  if (!nav) return;
+  nav.addEventListener('click', function(e) {
+    var btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    var targetId = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    var panel = document.getElementById(targetId);
+    if (panel) {
+      panel.classList.add('active');
+      if (window.__mermaidReady) { window.__renderMermaidIn(panel); }
+    }
+  });
+})();
+
+// ── Diagram lightbox ────────────────────────────────────────
+(function() {
+  var lightbox = document.getElementById('diagram-lightbox');
+  var inner = document.getElementById('diagram-lightbox-inner');
+  var closeBtn = document.getElementById('diagram-lightbox-close');
+  if (!lightbox || !inner || !closeBtn) return;
+
+  var scale = 1;
+  var translateX = 0;
+  var translateY = 0;
+  var isDragging = false;
+  var dragStartX = 0;
+  var dragStartY = 0;
+
+  function applyTransform() {
+    var svg = inner.querySelector('svg');
+    if (svg) {
+      svg.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')';
+      svg.style.transformOrigin = 'center center';
+      svg.style.transition = 'none';
+    }
+  }
+
+  function resetTransform() {
+    scale = 1; translateX = 0; translateY = 0;
+    applyTransform();
+  }
+
+  function openLightbox(svgEl) {
+    inner.innerHTML = svgEl.outerHTML;
+    var injected = inner.querySelector('svg');
+    if (injected) {
+      injected.removeAttribute('width');
+      injected.removeAttribute('height');
+      injected.style.cursor = 'grab';
+    }
+    resetTransform();
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    inner.innerHTML = '';
+    document.body.style.overflow = '';
+    resetTransform();
+  }
+
+  inner.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var delta = e.deltaY > 0 ? 0.9 : 1.1;
+    scale = Math.min(Math.max(scale * delta, 0.3), 8);
+    applyTransform();
+  }, { passive: false });
+
+  inner.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    isDragging = true;
+    dragStartX = e.clientX - translateX;
+    dragStartY = e.clientY - translateY;
+    var svg = inner.querySelector('svg');
+    if (svg) { svg.style.cursor = 'grabbing'; }
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    translateX = e.clientX - dragStartX;
+    translateY = e.clientY - dragStartY;
+    applyTransform();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!isDragging) return;
+    isDragging = false;
+    var svg = inner.querySelector('svg');
+    if (svg) { svg.style.cursor = 'grab'; }
+  });
+
+  inner.addEventListener('dblclick', function() { resetTransform(); });
+
+  document.addEventListener('click', function(e) {
+    var card = e.target.closest('.mermaid');
+    if (!card) return;
+    if (e.target.closest('.diagram-lightbox-close')) return;
+    var svg = card.querySelector('svg');
+    if (svg) { openLightbox(svg); }
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) { closeLightbox(); }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeLightbox(); }
+  });
+})();
+
+var _currentTarget = '';
+
+function toggleMultiSelect(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  document.querySelectorAll('.multi-select.open').forEach(function(ms) { if (ms.id !== id) ms.classList.remove('open'); });
+  el.classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select.open').forEach(function(ms) { ms.classList.remove('open'); });
+  }
+});
+
+function getMultiSelectValues(msId) {
+  var el = document.getElementById(msId);
+  if (!el) return [];
+  var checked = el.querySelectorAll('input[type=checkbox]:checked');
+  var vals = [];
+  for (var i = 0; i < checked.length; i++) vals.push(checked[i].value);
+  return vals;
+}
+
+function onMultiSelectChange(msId, label) {
+  var el = document.getElementById(msId);
+  if (!el) return;
+  var vals = getMultiSelectValues(msId);
+  var total = el.querySelectorAll('input[type=checkbox]').length;
+  var btn = el.querySelector('.multi-select-btn');
+  if (btn) {
+    btn.textContent = vals.length > 0 && vals.length < total ? label + ' (' + vals.length + ')' : label;
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  var selectedDomains = getMultiSelectValues('domain-ms');
+  var selectedCrits = getMultiSelectValues('criticality-ms');
+
+  var sections = document.querySelectorAll('.issue-section');
+  for (var i = 0; i < sections.length; i++) {
+    var domain = sections[i].getAttribute('data-domain');
+    sections[i].style.display = (selectedDomains.length === 0 || selectedDomains.indexOf(domain) >= 0) ? '' : 'none';
+  }
+
+  var rows = document.querySelectorAll('.issue-row');
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var section = row.closest('.issue-section');
+    if (section && section.style.display === 'none') {
+      row.style.display = 'none';
+      var next = row.nextElementSibling;
+      if (next && next.classList.contains('detail-row')) next.style.display = 'none';
+      continue;
+    }
+
+    var show = true;
+    if (_currentTarget && row.hasAttribute('data-targets')) {
+      var targetsStr = row.getAttribute('data-targets');
+      if (targetsStr && targetsStr !== '{}') {
+        try {
+          var targets = JSON.parse(targetsStr);
+          if (Object.keys(targets).length > 0 && !targets[_currentTarget]) {
+            show = false;
+          }
+        } catch(e) {}
+      }
+    }
+
+    if (show && selectedCrits.length > 0) {
+      var crit = row.getAttribute('data-criticality');
+      if (selectedCrits.indexOf(crit) < 0) show = false;
+    }
+
+    row.style.display = show ? '' : 'none';
+    var nextRow = row.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('detail-row')) {
+      if (!show) nextRow.style.display = 'none';
+    }
+  }
+}
+
+function clearAllFilters() {
+  document.querySelectorAll('.multi-select input[type=checkbox]').forEach(function(cb) { cb.checked = false; });
+  var domainBtn = document.querySelector('#domain-ms .multi-select-btn');
+  if (domainBtn) domainBtn.textContent = 'Domain';
+  var critBtn = document.querySelector('#criticality-ms .multi-select-btn');
+  if (critBtn) critBtn.textContent = 'Criticality';
+  applyFilters();
+}
+
+function onTargetChange(targetId) {
+  _currentTarget = targetId;
+  var rows = document.querySelectorAll('.issue-row[data-targets]');
+  var totalEffort = 0;
+  var domainCrits = {};
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var targets = JSON.parse(row.getAttribute('data-targets'));
+    var section = row.closest('.issue-section');
+    var domain = section ? section.getAttribute('data-domain') : '';
+
+    if (!targets || Object.keys(targets).length === 0) {
+      var sp = parseFloat(row.querySelector('.sp-cell').textContent) || 0;
+      totalEffort += sp;
+      if (!domainCrits[domain]) domainCrits[domain] = {mandatory:0,potential:0,optional:0};
+      var crit = row.getAttribute('data-criticality') || 'optional';
+      domainCrits[domain][crit] = (domainCrits[domain][crit] || 0) + 1;
+      continue;
+    }
+
+    var override = targets[targetId];
+    if (!override) {
+      continue;
+    }
+
+    var newSeverity = (override.severity || row.getAttribute('data-default-severity') || '').toLowerCase();
+    row.setAttribute('data-criticality', newSeverity);
+    var critCell = row.querySelector('.crit-cell');
+    if (critCell) {
+      var critText = newSeverity === 'mandatory' ? 'Mandatory' : newSeverity === 'potential' ? 'Potential' : 'Optional';
+      var cssClass = newSeverity === 'mandatory' ? 'crit-square-mandatory' : newSeverity === 'potential' ? 'crit-square-potential' : 'crit-square-optional';
+      critCell.innerHTML = '<span class="crit-label"><span class="crit-square ' + cssClass + '"></span>' + critText + '</span>';
+    }
+
+    var newEffort = override.effort !== undefined ? override.effort : parseFloat(row.getAttribute('data-default-effort')) || 0;
+    var spCell = row.querySelector('.sp-cell');
+    if (spCell) spCell.textContent = newEffort;
+    totalEffort += newEffort;
+
+    if (!domainCrits[domain]) domainCrits[domain] = {mandatory:0,potential:0,optional:0};
+    domainCrits[domain][newSeverity] = (domainCrits[domain][newSeverity] || 0) + 1;
+  }
+
+  var secSection = document.querySelector('.issue-section[data-domain="security"]');
+  if (secSection) {
+    var secRows = secSection.querySelectorAll('.issue-row');
+    for (var j = 0; j < secRows.length; j++) {
+      if (!secRows[j].hasAttribute('data-targets') || secRows[j].getAttribute('data-targets') === '') {
+        var sp = parseFloat(secRows[j].querySelector('.sp-cell').textContent) || 0;
+        totalEffort += sp;
+        if (!domainCrits['security']) domainCrits['security'] = {mandatory:0,potential:0,optional:0};
+        var sc = secRows[j].getAttribute('data-criticality') || 'optional';
+        domainCrits['security'][sc] = (domainCrits['security'][sc] || 0) + 1;
+      }
+    }
+  }
+
+  var label = totalEffort < 20 ? 'S' : totalEffort < 50 ? 'M' : totalEffort < 100 ? 'L' : 'XL';
+  var effortEl = document.getElementById('effort-display');
+  if (effortEl) effortEl.textContent = label + ' (total story points: ' + totalEffort + ')';
+
+  updateDonuts(domainCrits);
+  applyFilters();
+}
+
+function updateDonuts(domainCrits) {
+  var container = document.getElementById('donut-container');
+  if (!container) return;
+  container.innerHTML = '';
+  var domainNames = {'cloud-readiness':'Cloud Readiness','java-upgrade':'Java Upgrade','dotnet-upgrade':'DotNET Upgrade','security':'Security'};
+  var domainOrder = ['cloud-readiness','java-upgrade','dotnet-upgrade','security'];
+  for (var d = 0; d < domainOrder.length; d++) {
+    var key = domainOrder[d];
+    var c = domainCrits[key];
+    if (!c || (c.mandatory + c.potential + c.optional) === 0) continue;
+    var total = c.mandatory + c.potential + c.optional;
+    var div = document.createElement('div');
+    div.className = 'domain-summary-item';
+    div.innerHTML = buildDonutSvg(c.mandatory, c.potential, c.optional) +
+      '<h3>' + domainNames[key] + '</h3>' +
+      '<div class="count">' + total + ' issue' + (total !== 1 ? 's' : '') + '</div>';
+    container.appendChild(div);
+  }
+}
+
+function buildDonutSvg(m, p, o) {
+  var total = m + p + o;
+  if (total === 0) return '<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;"><circle cx="50" cy="50" r="35" fill="none" stroke="#d0d7de" stroke-width="15" opacity="0.5"/></svg>';
+  var r = 35, circ = 2 * Math.PI * r, offset = 0;
+  var svg = '<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">';
+  var segs = [{c:m,color:'var(--color-mandatory)'},{c:p,color:'var(--color-potential)'},{c:o,color:'var(--color-optional)'}];
+  for (var i = 0; i < segs.length; i++) {
+    if (segs[i].c === 0) continue;
+    var segLen = (segs[i].c / total) * circ;
+    var gap = total > segs[i].c ? 1.5 : 0;
+    var drawLen = Math.max(segLen - gap, 0.5);
+    svg += '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + segs[i].color + '" stroke-width="15" stroke-dasharray="' + drawLen.toFixed(2) + ' ' + circ.toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '"/>';
+    offset += segLen;
+  }
+  svg += '</svg>';
+  return svg;
+}
+</script>
+</div></body></html>

@@ -1,0 +1,85 @@
+{
+  "reportId": "20260806112044",
+  "metadata": {
+    "analysisStartTime": "2026-08-06T11:20:44Z",
+    "workspacePath": "Job_Portal",
+    "projectType": ".NET",
+    "assessmentStatus": "partial",
+    "notes": [
+      "Core AppCAT execution could not fully analyze legacy WebApplication targets in this Linux environment; fact documents were generated from source inspection."
+    ]
+  },
+  "facts": {
+    "architecture": "engines/facts/architecture-diagram.md",
+    "dependencies": "engines/facts/dependency-map.md",
+    "apiContracts": "engines/facts/api-service-contracts.md",
+    "dataArchitecture": "engines/facts/data-architecture.md",
+    "configurationInventory": "engines/facts/configuration-inventory.md",
+    "businessWorkflows": "engines/facts/business-workflows.md"
+  },
+  "security": [
+    {
+      "id": "CWE-259",
+      "title": "Use of Hard-coded Password",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.",
+      "evidence": {
+        "files": [
+          "Web.config:9"
+        ],
+        "explanation": "`Web.config` defines a database connection string inline with a password segment (`connectionString=...;user id=root;******;database=...`). This is a hard-coded password pattern in application configuration."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-798",
+      "title": "Use of Hard-coded Credentials",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+      "evidence": {
+        "files": [
+          "Web.config:9"
+        ],
+        "explanation": "Database credentials are embedded directly in `Web.config` connection string configuration, indicating static credential storage in source-controlled configuration."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-79",
+      "title": "Improper Neutralization of Input During Web Page Generation",
+      "category": "Injection Attacks",
+      "severity": "optional",
+      "description": "The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.",
+      "evidence": {
+        "files": [
+          "JobSeeker/Register.aspx.cs:60",
+          "JobSeeker/Profile.aspx.cs:42"
+        ],
+        "explanation": "User-controlled data is written to HTML output without explicit encoding. In `JobSeeker/Register.aspx.cs` line 60, username input is embedded directly into `lblMsg.Text` with HTML markup. In `JobSeeker/Profile.aspx.cs` line 42 onward, profile fields loaded from database are directly assigned to label text controls. This creates stored/reflected XSS risk if malicious script payloads are persisted in user fields."
+      },
+      "storyPoint": 8
+    }
+  ],
+  "rules": {},
+  "projects": [
+    {
+      "properties": {
+        "repo": "Job_Portal",
+        "appName": "Job_Portal",
+        "languages": [
+          "C#"
+        ],
+        "frameworks": [
+          "ASP.NET Web Forms"
+        ],
+        "tools": [
+          "NuGet"
+        ],
+        "applicationType": "Web Application"
+      },
+      "incidents": []
+    }
+  ]
+}
