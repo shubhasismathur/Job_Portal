@@ -1,0 +1,40 @@
+{
+  "reportId": "20260806112044",
+  "metadata": {
+    "analysisStartTime": "2026-08-06T11:20:44Z",
+    "workspacePath": "Job_Portal",
+    "projectType": ".NET",
+    "assessmentStatus": "partial",
+    "notes": [
+      "Core AppCAT execution could not fully analyze legacy WebApplication targets in this Linux environment; fact documents were generated from source inspection."
+    ]
+  },
+  "facts": {
+    "architecture": "engines/facts/architecture-diagram.md",
+    "dependencies": "engines/facts/dependency-map.md",
+    "apiContracts": "engines/facts/api-service-contracts.md",
+    "dataArchitecture": "engines/facts/data-architecture.md",
+    "configurationInventory": "engines/facts/configuration-inventory.md",
+    "businessWorkflows": "engines/facts/business-workflows.md"
+  },
+  "rules": {},
+  "projects": [
+    {
+      "properties": {
+        "repo": "Job_Portal",
+        "appName": "Job_Portal",
+        "languages": [
+          "C#"
+        ],
+        "frameworks": [
+          "ASP.NET Web Forms"
+        ],
+        "tools": [
+          "NuGet"
+        ],
+        "applicationType": "Web Application"
+      },
+      "incidents": []
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "GeneratedAt": "2026-08-06T11:25:02.0000000Z",
+  "ProjectPath": ".",
+  "Summary": {
+    "TotalFindings": 3,
+    "CveCount": 0,
+    "CweCount": 3,
+    "BySeverity": {
+      "mandatory": 0,
+      "optional": 3,
+      "potential": 0
+    },
+    "ByCategory": {
+      "Credentials & Secrets": 2,
+      "Injection Attacks": 1
+    },
+    "TotalRulesAssessed": 59,
+    "RulesPassed": 56
+  },
+  "CveFindings": [],
+  "CweFindings": [
+    {
+      "Id": "CWE-259",
+      "Name": "Use of Hard-coded Password",
+      "Category": "Credentials & Secrets",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.",
+      "Files": [
+        "Web.config:9"
+      ],
+      "Explanation": "`Web.config` defines a database connection string inline with a password segment (`connectionString=...;user id=root;******;database=...`). This is a hard-coded password pattern in application configuration."
+    },
+    {
+      "Id": "CWE-798",
+      "Name": "Use of Hard-coded Credentials",
+      "Category": "Credentials & Secrets",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+      "Files": [
+        "Web.config:9"
+      ],
+      "Explanation": "Database credentials are embedded directly in `Web.config` connection string configuration, indicating static credential storage in source-controlled configuration."
+    },
+    {
+      "Id": "CWE-79",
+      "Name": "Improper Neutralization of Input During Web Page Generation",
+      "Category": "Injection Attacks",
+      "Severity": "optional",
+      "StoryPoint": 8,
+      "Description": "The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.",
+      "Files": [
+        "JobSeeker/Register.aspx.cs:60",
+        "JobSeeker/Profile.aspx.cs:42"
+      ],
+      "Explanation": "User-controlled data is written to HTML output without explicit encoding. In `JobSeeker/Register.aspx.cs` line 60, username input is embedded directly into `lblMsg.Text` with HTML markup. In `JobSeeker/Profile.aspx.cs` line 42 onward, profile fields loaded from database are directly assigned to label text controls. This creates stored/reflected XSS risk if malicious script payloads are persisted in user fields."
+    }
+  ]
+}
