@@ -1,0 +1,116 @@
+{
+  "GeneratedAt": "2026-08-06T12:05:19.0000000Z",
+  "ProjectPath": "Job_Portal",
+  "Summary": {
+    "TotalFindings": 7,
+    "CveCount": 0,
+    "CweCount": 7,
+    "BySeverity": {
+      "potential": 3,
+      "optional": 4
+    },
+    "ByCategory": {
+      "Code Quality": 2,
+      "Credentials & Secrets": 4,
+      "Injection Attacks": 1
+    },
+    "TotalRulesAssessed": 59,
+    "RulesPassed": 52
+  },
+  "CveFindings": [],
+  "CweFindings": [
+    {
+      "Id": "CWE-772",
+      "Name": "Missing Release of Resource after Effective Lifetime",
+      "Category": "Code Quality",
+      "Severity": "potential",
+      "StoryPoint": 3,
+      "Description": "The product does not release a resource after its effective lifetime has ended, i.e., after the resource is no longer needed.",
+      "Files": [
+        "Job_Portal/JobSeeker/Login.aspx.cs",
+        "Job_Portal/JobSeeker/ResumeBuild.aspx.cs"
+      ],
+      "Explanation": "MySqlDataReader objects are obtained via ExecuteReader() but are not wrapped in 'using' statements or explicitly closed in all code paths. In Login.aspx.cs line 55, the reader is not in a using block \u2014 if an exception occurs between Open() and the end of the method, the reader is not disposed. In ResumeBuild.aspx.cs line 49, the reader obtained from ExecuteReader() is not in a using block inside LoadUserDetails()."
+    },
+    {
+      "Id": "CWE-1057",
+      "Name": "Data Access Operations Outside of Expected Data Manager Component",
+      "Category": "Code Quality",
+      "Severity": "potential",
+      "StoryPoint": 5,
+      "Description": "The product uses a dedicated, central data manager component as required by design, but it contains code that performs data-access operations that do not use this data manager.",
+      "Files": [
+        "Job_Portal/JobSeeker/Login.aspx.cs",
+        "Job_Portal/JobSeeker/Register.aspx.cs",
+        "Job_Portal/JobSeeker/Job_Details.aspx.cs",
+        "Job_Portal/JobProvider/NewJob.aspx.cs",
+        "Job_Portal/JobProvider/Dashboard.aspx.cs"
+      ],
+      "Explanation": "All database operations are performed directly inside ASP.NET WebForms code-behind files (presentation layer) rather than in a dedicated data manager or repository component. Every .aspx.cs file instantiates MySqlConnection and MySqlCommand inline, bypassing any centralized data management layer. This architectural pattern violates separation of concerns and makes secure, consistent data access enforcement impossible."
+    },
+    {
+      "Id": "CWE-259",
+      "Name": "Use of Hard-coded Password",
+      "Category": "Credentials & Secrets",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.",
+      "Files": [
+        "Job_Portal/Web.config"
+      ],
+      "Explanation": "Web.config line 9 contains a hard-coded MySQL password in the connection string: connectionString=\"server=127.0.0.1;user id=root;******;database=OnlineJobPortal;\". The password is embedded in a source-controlled configuration file and is the same across all environments (no environment-specific override in Web.Release.config)."
+    },
+    {
+      "Id": "CWE-732",
+      "Name": "Incorrect Permission Assignment for Critical Resource",
+      "Category": "Credentials & Secrets",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product specifies permissions for a security-critical resource in a way that allows that resource to be read or modified by unintended actors.",
+      "Files": [
+        "Job_Portal/Web.config"
+      ],
+      "Explanation": "The MySQL connection string uses 'user id=root' \u2014 the MySQL root account with unrestricted server-level permissions. This violates the principle of least privilege: the application has full DDL and administrative rights on the database server, not just the DML permissions needed for application operation. If the application is compromised, an attacker would have full control over the entire MySQL server."
+    },
+    {
+      "Id": "CWE-778",
+      "Name": "Insufficient Logging",
+      "Category": "Credentials & Secrets",
+      "Severity": "potential",
+      "StoryPoint": 3,
+      "Description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+      "Files": [
+        "Job_Portal/JobSeeker/Login.aspx.cs",
+        "Job_Portal/JobSeeker/Register.aspx.cs",
+        "Job_Portal/JobProvider/NewJob.aspx.cs"
+      ],
+      "Explanation": "No logging framework (EventLog, NLog, Serilog, ILogger, or ASP.NET Trace) is used anywhere in the application. Security-critical events \u2014 failed login attempts (Login.aspx.cs catch block), registration failures, file upload errors, database errors \u2014 are only displayed to the end-user via lblMsg.Text and are never logged to any persistent log store. There is no audit trail for authentication events, application errors, or data modification operations."
+    },
+    {
+      "Id": "CWE-798",
+      "Name": "Use of Hard-coded Credentials",
+      "Category": "Credentials & Secrets",
+      "Severity": "optional",
+      "StoryPoint": 5,
+      "Description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+      "Files": [
+        "Job_Portal/Web.config"
+      ],
+      "Explanation": "Web.config contains hard-coded database credentials (username 'root' and password) in the <connectionStrings> section. This file is source-controlled, meaning credentials are exposed to anyone with repository access. The Web.Release.config transform does not override the connection string, so production deployments use the same developer credentials."
+    },
+    {
+      "Id": "CWE-79",
+      "Name": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+      "Category": "Injection Attacks",
+      "Severity": "optional",
+      "StoryPoint": 8,
+      "Description": "The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.",
+      "Files": [
+        "Job_Portal/JobSeeker/Register.aspx.cs",
+        "Job_Portal/JobSeeker/Job_Details.aspx.cs",
+        "Job_Portal/JobProvider/NewJob.aspx.cs"
+      ],
+      "Explanation": "Multiple reflected and stored XSS vulnerabilities exist. (1) Register.aspx.cs line 60: user-supplied username is embedded unencoded into an HTML string assigned to lblMsg.Text \u2014 `$\"<b>{txtUserName.Text.Trim()}</b> username already exists.\"`. ASP.NET Label.Text renders raw HTML, allowing script injection. (2) Job_Details.aspx.cs lines 55, 73, 83: database-stored job fields (Description, Qualification, Experience) are assigned directly to Label and Literal controls without HTML encoding \u2014 a provider who stored malicious script in a job posting would trigger XSS for all visitors viewing that job. (3) NewJob.aspx.cs line 78: exception message appended to an HTML div string in lblMsg.Text."
+    }
+  ]
+}

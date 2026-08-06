@@ -1,0 +1,450 @@
+{
+  "metadata": {
+    "analysisStartTime": "2026-08-06T11:51:42Z",
+    "toolVersion": "manual-assessment",
+    "reportId": "20260806115142",
+    "projectName": "Job_Portal",
+    "projectType": ".NET Framework 4.7.2 ASP.NET WebForms",
+    "targetFramework": "net472",
+    "assessmentNote": "Automated appcat analysis could not run (MSBuild unavailable on Linux for .NET Framework projects). This report is based on manual source code analysis."
+  },
+  "rules": {
+    "ISSUE-001": {
+      "ruleId": "ISSUE-001",
+      "name": "Plaintext Password Storage",
+      "description": "User passwords are stored and queried in plaintext in the MySQL database. There is no hashing or salting of passwords.",
+      "severity": "mandatory",
+      "category": "Security",
+      "effort": 3,
+      "labels": [
+        "Security"
+      ]
+    },
+    "ISSUE-002": {
+      "ruleId": "ISSUE-002",
+      "name": "No CSRF Protection",
+      "description": "ASP.NET WebForms ViewState is present but CSRF tokens are not validated. Forms submit without additional anti-forgery validation.",
+      "severity": "mandatory",
+      "category": "Security",
+      "effort": 3,
+      "labels": [
+        "Security"
+      ]
+    },
+    "ISSUE-003": {
+      "ruleId": "ISSUE-003",
+      "name": "Session-based Authentication Without Secure Flags",
+      "description": "Authentication relies entirely on ASP.NET Session. No secure or HttpOnly cookie flags are explicitly set. Session fixation attack possible.",
+      "severity": "mandatory",
+      "category": "Security",
+      "effort": 8,
+      "labels": [
+        "Security"
+      ]
+    },
+    "ISSUE-004": {
+      "ruleId": "ISSUE-004",
+      "name": "ASP.NET WebForms \u2014 Windows/IIS Only",
+      "description": "ASP.NET WebForms (System.Web) is not supported on .NET Core / .NET 5+. The application cannot run on Linux or in containers without a full rewrite.",
+      "severity": "mandatory",
+      "category": "Platform",
+      "effort": 13,
+      "labels": [
+        "Platform"
+      ]
+    },
+    "ISSUE-005": {
+      "ruleId": "ISSUE-005",
+      "name": "Local File System Storage (CompanyLogos, Resumes)",
+      "description": "Company logos and resumes are stored on the local file system. This is incompatible with cloud deployments using multiple instances or containers.",
+      "severity": "mandatory",
+      "category": "Platform",
+      "effort": 3,
+      "labels": [
+        "Platform"
+      ]
+    },
+    "ISSUE-006": {
+      "ruleId": "ISSUE-006",
+      "name": "Database Credentials in Web.config",
+      "description": "The MySQL connection string including credentials is stored unencrypted in Web.config. If the file is exposed, credentials are compromised.",
+      "severity": "mandatory",
+      "category": "Security",
+      "effort": 1,
+      "labels": [
+        "Security"
+      ]
+    },
+    "ISSUE-007": {
+      "ruleId": "ISSUE-007",
+      "name": "No Input Sanitization on HTML Output",
+      "description": "User-supplied data is directly assigned to Label.Text (e.g., ex.Message in catch blocks) and rendered as HTML. This may allow reflected XSS.",
+      "severity": "mandatory",
+      "category": "Security",
+      "effort": 3,
+      "labels": [
+        "Security"
+      ]
+    },
+    "ISSUE-008": {
+      "ruleId": "ISSUE-008",
+      "name": "No Separation of Concerns / No Service Layer",
+      "description": "All business logic and database access is embedded directly in ASP.NET code-behind files. There is no service layer, repository pattern, or any form of abstraction.",
+      "severity": "mandatory",
+      "category": "Architecture",
+      "effort": 8,
+      "labels": [
+        "Architecture"
+      ]
+    },
+    "ISSUE-009": {
+      "ruleId": "ISSUE-009",
+      "name": "No Dependency Injection",
+      "description": "Services, database connections, and configuration are instantiated directly in page code-behind. No DI container is used.",
+      "severity": "mandatory",
+      "category": "Architecture",
+      "effort": 8,
+      "labels": [
+        "Architecture"
+      ]
+    },
+    "ISSUE-010": {
+      "ruleId": "ISSUE-010",
+      "name": "Hardcoded Server Connection on Localhost",
+      "description": "Connection string hardcodes server=127.0.0.1. This will fail in any cloud or containerized deployment where the database is a separate service.",
+      "severity": "mandatory",
+      "category": "Architecture",
+      "effort": 1,
+      "labels": [
+        "Architecture"
+      ]
+    },
+    "ISSUE-011": {
+      "ruleId": "ISSUE-011",
+      "name": "iTextSharp License (AGPL)",
+      "description": "iTextSharp 5.x is licensed under AGPL, which requires open-sourcing derivative works. This may have legal implications.",
+      "severity": "mandatory",
+      "category": "Compatibility",
+      "effort": 3,
+      "labels": [
+        "Compatibility"
+      ]
+    },
+    "ISSUE-012": {
+      "ruleId": "ISSUE-012",
+      "name": "Global.asax \u2014 Not Supported on .NET Core",
+      "description": "Global.asax application lifecycle events are specific to ASP.NET on .NET Framework and are not available in ASP.NET Core.",
+      "severity": "mandatory",
+      "category": "Platform",
+      "effort": 1,
+      "labels": [
+        "Platform"
+      ]
+    },
+    "ISSUE-013": {
+      "ruleId": "ISSUE-013",
+      "name": "Web.config \u2014 IIS-specific Configuration",
+      "description": "Web.config is specific to IIS hosting on Windows. It cannot be used in Kestrel-based ASP.NET Core deployments.",
+      "severity": "mandatory",
+      "category": "Platform",
+      "effort": 3,
+      "labels": [
+        "Platform"
+      ]
+    },
+    "ISSUE-014": {
+      "ruleId": "ISSUE-014",
+      "name": "Inconsistent Namespace Usage",
+      "description": "Files use inconsistent namespaces: Job_Portal.JobProvider vs OnlineJobPortal.JobProvider in different files.",
+      "severity": "optional",
+      "category": "Code Quality",
+      "effort": 1,
+      "labels": [
+        "Code Quality"
+      ]
+    },
+    "ISSUE-015": {
+      "ruleId": "ISSUE-015",
+      "name": "No Error Logging Framework",
+      "description": "Errors are caught and displayed to the user but not logged. There is no structured logging or monitoring integration.",
+      "severity": "optional",
+      "category": "Code Quality",
+      "effort": 1,
+      "labels": [
+        "Code Quality"
+      ]
+    },
+    "ISSUE-016": {
+      "ruleId": "ISSUE-016",
+      "name": "No Unit or Integration Tests",
+      "description": "No test projects or test files were found. There is no automated test coverage for any business logic.",
+      "severity": "optional",
+      "category": "Code Quality",
+      "effort": 8,
+      "labels": [
+        "Code Quality"
+      ]
+    },
+    "ISSUE-017": {
+      "ruleId": "ISSUE-017",
+      "name": "Session Used as Only Authorization Mechanism",
+      "description": "Role-based access control is implemented as simple Session[\"Role\"] string comparisons. No formal authorization framework is used.",
+      "severity": "optional",
+      "category": "Architecture",
+      "effort": 8,
+      "labels": [
+        "Architecture"
+      ]
+    },
+    "ISSUE-018": {
+      "ruleId": "ISSUE-018",
+      "name": "No Async/Await on Database Operations",
+      "description": "All database operations are synchronous. This blocks the thread pool and reduces scalability under load.",
+      "severity": "potential",
+      "category": "Code Quality",
+      "effort": 3,
+      "labels": [
+        "Code Quality"
+      ]
+    }
+  },
+  "projects": [
+    {
+      "id": "job-portal",
+      "properties": {
+        "appName": "Job_Portal",
+        "repo": "Job_Portal",
+        "languages": [
+          ".NET Framework 4.7.2",
+          "C#"
+        ],
+        "frameworks": [
+          "ASP.NET WebForms 4.7.2"
+        ],
+        "tools": [
+          "MSBuild",
+          "NuGet"
+        ]
+      },
+      "incidents": [
+        {
+          "ruleId": "ISSUE-001",
+          "file": "JobSeeker/Register.aspx.cs, JobSeeker/Login.aspx.cs",
+          "message": "Use a strong password hashing algorithm such as BCrypt or PBKDF2. Never store or compare plaintext passwords.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-002",
+          "file": "All .aspx pages",
+          "message": "Enable ASP.NET ViewState MAC, or migrate to ASP.NET Core with AntiForgeryToken middleware.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-003",
+          "file": "JobSeeker/Login.aspx.cs",
+          "message": "Migrate to ASP.NET Core Identity with JWT or cookie authentication with secure flags, SameSite policy, and session regeneration on login.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-004",
+          "file": "All .aspx pages, Global.asax, Web.config",
+          "message": "Migrate to ASP.NET Core MVC or Razor Pages, which run cross-platform and in containers.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-005",
+          "file": "JobProvider/NewJob.aspx.cs, JobSeeker/Job_Details.aspx.cs",
+          "message": "Move file storage to a cloud blob storage service (e.g., Azure Blob Storage, AWS S3).",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-006",
+          "file": "Web.config",
+          "message": "Use environment variables, Azure Key Vault, AWS Secrets Manager, or .NET Secret Manager to store credentials outside of config files.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-007",
+          "file": "Multiple .aspx.cs files",
+          "message": "Use HtmlEncode on all user-supplied output. Migrate to ASP.NET Core with automatic encoding.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-008",
+          "file": "All .aspx.cs files",
+          "message": "Introduce a service/repository layer to separate concerns. This is required before migration to any modern framework.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-009",
+          "file": "All .aspx.cs files",
+          "message": "Refactor to use ASP.NET Core's built-in DI container.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-010",
+          "file": "Web.config",
+          "message": "Use environment-specific configuration or service discovery to resolve the database host.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-011",
+          "file": "packages.config",
+          "message": "Evaluate licensing requirements. Consider migrating to iText 7 with a commercial license or an MIT-licensed alternative.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-012",
+          "file": "Global.asax, Global.asax.cs",
+          "message": "Replace with ASP.NET Core Startup/Program.cs middleware pipeline.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-013",
+          "file": "Web.config, Web.Debug.config, Web.Release.config",
+          "message": "Migrate configuration to appsettings.json / environment variables for ASP.NET Core.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-014",
+          "file": "JobProvider/NewJob.aspx.cs vs other JobProvider files",
+          "message": "Standardize all namespaces to a single root namespace.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-015",
+          "file": "All .aspx.cs files",
+          "message": "Integrate a logging framework (e.g., Microsoft.Extensions.Logging, Serilog, NLog) for structured observability.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-016",
+          "file": "Repository root",
+          "message": "Add unit and integration tests. Refactor code-behind to extract testable service classes.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-017",
+          "file": "Multiple .aspx.cs Page_Load handlers",
+          "message": "Implement role-based authorization using ASP.NET Core Identity and the [Authorize] attribute.",
+          "effort": 1
+        },
+        {
+          "ruleId": "ISSUE-018",
+          "file": "All .aspx.cs files",
+          "message": "Migrate to async/await patterns using the async overloads of MySqlCommand and MySqlDataReader.",
+          "effort": 1
+        }
+      ]
+    }
+  ],
+  "security": [
+    {
+      "id": "CWE-772",
+      "title": "Missing Release of Resource after Effective Lifetime",
+      "category": "Code Quality",
+      "severity": "potential",
+      "description": "The product does not release a resource after its effective lifetime has ended, i.e., after the resource is no longer needed.",
+      "evidence": {
+        "files": [
+          "Job_Portal/JobSeeker/Login.aspx.cs",
+          "Job_Portal/JobSeeker/ResumeBuild.aspx.cs"
+        ],
+        "explanation": "MySqlDataReader objects are obtained via ExecuteReader() but are not wrapped in 'using' statements or explicitly closed in all code paths. In Login.aspx.cs line 55, the reader is not in a using block \u2014 if an exception occurs between Open() and the end of the method, the reader is not disposed. In ResumeBuild.aspx.cs line 49, the reader obtained from ExecuteReader() is not in a using block inside LoadUserDetails()."
+      },
+      "storyPoint": 3
+    },
+    {
+      "id": "CWE-1057",
+      "title": "Data Access Operations Outside of Expected Data Manager Component",
+      "category": "Code Quality",
+      "severity": "potential",
+      "description": "The product uses a dedicated, central data manager component as required by design, but it contains code that performs data-access operations that do not use this data manager.",
+      "evidence": {
+        "files": [
+          "Job_Portal/JobSeeker/Login.aspx.cs",
+          "Job_Portal/JobSeeker/Register.aspx.cs",
+          "Job_Portal/JobSeeker/Job_Details.aspx.cs",
+          "Job_Portal/JobProvider/NewJob.aspx.cs",
+          "Job_Portal/JobProvider/Dashboard.aspx.cs"
+        ],
+        "explanation": "All database operations are performed directly inside ASP.NET WebForms code-behind files (presentation layer) rather than in a dedicated data manager or repository component. Every .aspx.cs file instantiates MySqlConnection and MySqlCommand inline, bypassing any centralized data management layer. This architectural pattern violates separation of concerns and makes secure, consistent data access enforcement impossible."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-259",
+      "title": "Use of Hard-coded Password",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.",
+      "evidence": {
+        "files": [
+          "Job_Portal/Web.config"
+        ],
+        "explanation": "Web.config line 9 contains a hard-coded MySQL password in the connection string: connectionString=\"server=127.0.0.1;user id=root;******;database=OnlineJobPortal;\". The password is embedded in a source-controlled configuration file and is the same across all environments (no environment-specific override in Web.Release.config)."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-732",
+      "title": "Incorrect Permission Assignment for Critical Resource",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product specifies permissions for a security-critical resource in a way that allows that resource to be read or modified by unintended actors.",
+      "evidence": {
+        "files": [
+          "Job_Portal/Web.config"
+        ],
+        "explanation": "The MySQL connection string uses 'user id=root' \u2014 the MySQL root account with unrestricted server-level permissions. This violates the principle of least privilege: the application has full DDL and administrative rights on the database server, not just the DML permissions needed for application operation. If the application is compromised, an attacker would have full control over the entire MySQL server."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-778",
+      "title": "Insufficient Logging",
+      "category": "Credentials & Secrets",
+      "severity": "potential",
+      "description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+      "evidence": {
+        "files": [
+          "Job_Portal/JobSeeker/Login.aspx.cs",
+          "Job_Portal/JobSeeker/Register.aspx.cs",
+          "Job_Portal/JobProvider/NewJob.aspx.cs"
+        ],
+        "explanation": "No logging framework (EventLog, NLog, Serilog, ILogger, or ASP.NET Trace) is used anywhere in the application. Security-critical events \u2014 failed login attempts (Login.aspx.cs catch block), registration failures, file upload errors, database errors \u2014 are only displayed to the end-user via lblMsg.Text and are never logged to any persistent log store. There is no audit trail for authentication events, application errors, or data modification operations."
+      },
+      "storyPoint": 3
+    },
+    {
+      "id": "CWE-798",
+      "title": "Use of Hard-coded Credentials",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+      "evidence": {
+        "files": [
+          "Job_Portal/Web.config"
+        ],
+        "explanation": "Web.config contains hard-coded database credentials (username 'root' and password) in the <connectionStrings> section. This file is source-controlled, meaning credentials are exposed to anyone with repository access. The Web.Release.config transform does not override the connection string, so production deployments use the same developer credentials."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-79",
+      "title": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+      "category": "Injection Attacks",
+      "severity": "optional",
+      "description": "The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.",
+      "evidence": {
+        "files": [
+          "Job_Portal/JobSeeker/Register.aspx.cs",
+          "Job_Portal/JobSeeker/Job_Details.aspx.cs",
+          "Job_Portal/JobProvider/NewJob.aspx.cs"
+        ],
+        "explanation": "Multiple reflected and stored XSS vulnerabilities exist. (1) Register.aspx.cs line 60: user-supplied username is embedded unencoded into an HTML string assigned to lblMsg.Text \u2014 `$\"<b>{txtUserName.Text.Trim()}</b> username already exists.\"`. ASP.NET Label.Text renders raw HTML, allowing script injection. (2) Job_Details.aspx.cs lines 55, 73, 83: database-stored job fields (Description, Qualification, Experience) are assigned directly to Label and Literal controls without HTML encoding \u2014 a provider who stored malicious script in a job posting would trigger XSS for all visitors viewing that job. (3) NewJob.aspx.cs line 78: exception message appended to an HTML div string in lblMsg.Text."
+      },
+      "storyPoint": 8
+    }
+  ]
+}
